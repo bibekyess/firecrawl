@@ -2,6 +2,7 @@ import { SearchV2Response, SearchResultType } from "../../lib/entities";
 import { config } from "../../config";
 import { fire_engine_search_v2 } from "./fireEngine-v2";
 import { searxng_search } from "./searxng";
+import { brave_search } from "./brave";
 import { ddgSearch } from "./ddgsearch";
 import { Logger } from "winston";
 
@@ -68,6 +69,29 @@ export async function search({
     // includeDomains/excludeDomains are enforced on returned URLs only on
     // the fire engine path above; the fallback providers below receive them
     // solely as the site: chain baked into the query.
+    if (config.BRAVE_API_KEY) {
+      logger.info("Using Brave search");
+      const results = await brave_search(query, {
+        num_results,
+        tbs,
+        lang,
+        country,
+        safe,
+        type,
+        timeout,
+      });
+      // Partial results (e.g. news succeeded, web failed) are returned as-is;
+      // the fallbacks below only serve web results.
+      if (
+        results.web?.length ||
+        results.news?.length ||
+        results.images?.length
+      ) {
+        return results;
+      }
+      logger.warn("Brave search returned no results, falling back");
+    }
+
     if (config.SEARXNG_ENDPOINT) {
       logger.info("Using searxng search");
       const results = await searxng_search(query, {

@@ -374,6 +374,7 @@ const configSchema = z.object({
   PDF_EXTRACTION_CONCURRENCY: z.coerce.number().int().positive().default(3),
 
   // Search Services
+  BRAVE_API_KEY: z.string().optional(),
   SEARXNG_ENDPOINT: z.string().optional(),
   SEARXNG_ENGINES: z.string().optional(),
   SEARXNG_CATEGORIES: z.string().optional(),

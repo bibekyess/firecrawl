@@ -30,7 +30,8 @@ export const HAS_PROXY = !!config.PROXY_SERVER;
 export const HAS_PRODUCT_SERVICE = !!config.PRODUCT_EXTRACTION_SERVICE_URL;
 export const HAS_MENU_SERVICE = !!config.MENU_EXTRACTION_SERVICE_URL;
 
-export const HAS_SEARCH = TEST_PRODUCTION || !!config.SEARXNG_ENDPOINT;
+export const HAS_SEARCH =
+  TEST_PRODUCTION || !!config.SEARXNG_ENDPOINT || !!config.BRAVE_API_KEY;
 
 const isLocalUrl = (x: string) =>
   /^https?:\/\/(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?([\/?#]|$)/i.test(

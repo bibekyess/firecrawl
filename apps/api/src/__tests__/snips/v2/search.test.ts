@@ -390,6 +390,62 @@ describeIf(TEST_PRODUCTION || HAS_SEARCH || HAS_PROXY)("Search tests", () => {
     60000,
   );
 
+  // Brave-specific tests: Brave is used when fire-engine is not configured,
+  // and runs before SearXNG.
+  const USES_BRAVE = !!config.BRAVE_API_KEY && !config.FIRE_ENGINE_BETA_URL;
+
+  concurrentIf(USES_BRAVE)(
+    "brave respects limit of 3 results",
+    async () => {
+      const res = await search({ query: "firecrawl", limit: 3 }, identity);
+      expect(res.web).toBeDefined();
+      expect(res.web?.length).toBeGreaterThan(0);
+      expect(res.web?.length).toBeLessThanOrEqual(3);
+      for (const r of res.web ?? []) {
+        expect(r.url).toMatch(/^https?:\/\//);
+        expect(typeof r.title).toBe("string");
+      }
+    },
+    60000,
+  );
+
+  concurrentIf(USES_BRAVE)(
+    "brave caps web results at 20 per search",
+    async () => {
+      const res = await search({ query: "web scraping", limit: 25 }, identity);
+      expect(res.web).toBeDefined();
+      expect(res.web!.length).toBeGreaterThan(0);
+      expect(res.web!.length).toBeLessThanOrEqual(20);
+    },
+    60000,
+  );
+
+  concurrentIf(USES_BRAVE)(
+    "brave returns news results",
+    async () => {
+      const res = await search(
+        { query: "technology", limit: 3, sources: ["news"] },
+        identity,
+      );
+      expect(res.news).toBeDefined();
+      expect(res.news?.length).toBeGreaterThan(0);
+      expect(res.news?.[0].url).toMatch(/^https?:\/\//);
+    },
+    60000,
+  );
+
+  concurrentIf(USES_BRAVE)(
+    "brave falls back to plain search on an unsupported locale",
+    async () => {
+      const res = await search(
+        { query: "firecrawl", limit: 3, lang: "xx", country: "zz" },
+        identity,
+      );
+      expect(res.web?.length).toBeGreaterThan(0);
+    },
+    60000,
+  );
+
   // SEARXNG-specific pagination tests
   concurrentIf(!!config.SEARXNG_ENDPOINT)(
     "searxng respects limit of 2 results",

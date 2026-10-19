@@ -4,6 +4,7 @@ import { searxng_search } from "./searxng";
 import { fire_engine_search } from "./fireEngine";
 import { Logger } from "winston";
 import { ddgSearch } from "./v2/ddgsearch";
+import { brave_search } from "./v2/brave";
 
 export async function search({
   query,
@@ -44,6 +45,23 @@ export async function search({
         location,
       });
       return results;
+    }
+    if (config.BRAVE_API_KEY) {
+      logger.info("Using Brave search");
+      const results = await brave_search(query, {
+        num_results,
+        tbs,
+        lang,
+        country,
+        timeout,
+      });
+      if (results.web && results.web.length > 0) {
+        return results.web.map(
+          result =>
+            new SearchResult(result.url, result.title, result.description),
+        );
+      }
+      logger.warn("Brave search returned no results, falling back");
     }
     if (config.SEARXNG_ENDPOINT) {
       logger.info("Using searxng search");
